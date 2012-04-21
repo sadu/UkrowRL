@@ -1,41 +1,122 @@
-<?php
-	//error_reporting(-1);
-	require("mysql.php");
-	$url = $_POST['url'];
-	$pass = $_POST['pass'];
-	$nojs = isset($_POST['nojs'])? true : false;
-	$hash = file('pass.hash');
-	$hash = substr($hash[0], 0, -1);
-
-	$isAuth = ( md5($hash) == md5($pass) );
-
-	if($url != NULL){
-		if(preg_match('|^http(s)?://[a-z0-9-]+(.[a-z0-9-]+)*(:[0-9]+)?(/.*)?$|i', $url) && $isAuth) {
-			mysql_query('INSERT INTO urls (url) VALUES ("'.htmlentities($url).'")') or die(mysql_error());
-			$id = mysql_insert_id();
-			if($nojs == true)
-				header("Location: http://u.krow.me/?u=$id");
+<?php	
+	function getRandomKey($length)
+    {
+        $default_arr = array("0123456789",
+                             "abcdefghijklmnopqrstuvwxyz",
+                             "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+        $set = $default_arr[0].$default_arr[1].$default_arr[2];
+        $random_string = "";
+        for($i=0;$i<$length;$i++)
+            $random_string .= $set[mt_rand(0,strlen($set)-1)];
+        return $random_string;
+    }
+	
+	//echo $_SERVER['REDIRECT_REMOTE_USER']; die();
+	
+	if(isset($_SERVER['HTTP_REFERER']) && $_SERVER['HTTP_REFERER'] === $_SERVER['PHP_SELF'])
+		die("Redirection Loop Detected");
+	else if($_SERVER['REQUEST_METHOD'] === "POST")
+	{
+		$sqli = new mysqli("localhost", "nbaztec", "");
+		if ($sqli->connect_error) 
+			die('Connect Error ('.$sqli->connect_errno.') '.$sqli->connect_error);
+		$sqli->select_db("test");
+		
+		$PARCEL = array("error" => "", "url" => "");
+		$pat = "|^https?://(?:www\.)?(?:[\w-.]+)(?:/[/%&?=\w.-]+)?$|i";
+		$no_js = isset($_POST['no-js'])? $_POST['no-js']: false;
+		$custom = isset($_POST['custom'])? preg_replace("|[^\w-]|","-",$_POST['custom']) : NULL;
+		$url = isset($_POST['url']) && preg_match($pat, $_POST['url'])? htmlentities($_POST['url']): NULL;	
+		
+		if($url)
+		{
+			$r = $sqli->query("SELECT id FROM `urls` WHERE url='$url'");			
+			if($r->num_rows === 0)
+			{
+				$sqli->query("INSERT INTO `urls`(url) VALUES('$url')");				
+					$id = $sqli->insert_id;
+				if(!$r)
+					die('Query Error ('.$sqli->connect_errno.') '.$sqli->connect_error);
+			}
 			else
-				echo json_encode(array('message' => "http://u.krow.me/$id", 'type' => 'success'), true);
-		} else if(!$isAuth) {
-			echo json_encode(array('message' => 'Error: wrong passphrase !', 'type' => 'error'), true);
-		}
-		else {
-			echo json_encode(array('message' => 'Error: invalid request !', 'type' => 'error'), true);
-		}
-	}else if($_GET['id']){
-		$id = htmlentities($_GET['id']);
-		$getUrl = mysql_query("SELECT url FROM urls WHERE id = $id");
-
-		if(mysql_num_rows($getUrl)) {
-			$url = mysql_fetch_array($getUrl);
-			$url = html_entity_decode($url['url']);
-			if($isAuth)
-				echo json_encode(array('message' => $url, 'type' => 'success'), true);
+			{
+				$row = $r->fetch_assoc();				
+				$id = $row['id'];
+				$id = $row['id'];
+			}
+	
+			// Insert into custom
+			if($custom)
+			{				
+				$sqli->query("INSERT INTO `mapping` VALUES('$custom', $id)");
+				if($sqli->errno == 1062)
+					$PARCEL['error'] = "Entry ".$custom." is already taken";
+			}
 			else
-				header("Location: $url");
-		} else {
-			echo "invalid link :(";
+			{			
+				do
+				{
+					$custom = getRandomKey(4);				
+					$sqli->query("INSERT INTO `mapping` VALUES('$custom', $id)");
+				}while($sqli->errno == 1062);
+			}
+			$PARCEL['url'] = $custom;
 		}
+		else
+		{
+			$PARCEL['error'] = "Malformed URL";
+		}
+		//echo preg_match($pat, "http://www.nbaztec.co.in", $match);
+		//echo $match[1]."|".$match[2];	
+		$sqli->commit();
+		$sqli->close();
+
+		if($no_js == "false")
+			echo json_encode($PARCEL);		
+		//print_r($PARCEL);
+		
 	}
+	else if($_SERVER['REQUEST_METHOD'] === "GET" && isset($_GET['key']))
+	{
+		$PARCEL = array("error" => "", "url" => "");
+		$custom = $_GET['key'];
+				$sqli = new mysqli("localhost", "nbaztec", "");
+		if ($sqli->connect_error) 
+			die('Connect Error ('.$sqli->connect_errno.') '.$sqli->connect_error);
+		$sqli->select_db("test");
+		if($custom)
+		{			
+			$r = $sqli->query("SELECT url FROM `urls` AS u INNER JOIN `mapping` AS m ON u.id=m.id WHERE m.key='$custom'");
+			if($sqli->errno === 0)
+			{
+				$row = $r->fetch_assoc();
+				$u = html_entity_decode($row['url']);
+				/*
+				 * Custom way to detect redirect loop, but client will handle it anyway
+				 *
+				$ch = curl_init(); 
+				curl_setopt($ch, CURLOPT_URL,            $u); 
+				curl_setopt($ch, CURLOPT_HEADER,         true); 
+				curl_setopt($ch, CURLOPT_NOBODY,         true); 
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); 
+				curl_setopt($ch, CURLOPT_TIMEOUT,        15); 		
+				curl_exec($ch); 
+				$e = curl_errno($ch);
+				curl_close($ch);
+				if($e)
+				{
+					echo "REDIRECT ERROR";					
+					die();
+				}
+				*/				
+				header( "HTTP/1.1 301 Moved Permanently" ); 
+				header("Location: ".html_entity_decode($row['url']));				
+				
+			}
+			else
+				$PARCEL['error'] = "No such url exists";
+			//print_r($PARCEL);
+		}
+		
+	}			
 ?>
