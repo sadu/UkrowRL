@@ -1,0 +1,52 @@
+﻿#noJS {
+	text-align: center;
+}
+#yesJS {
+	display: none;
+}
+body {
+	font-family: "Fixedsys Excelsior 2.00";
+}
+#krow {
+	font-size: xx-large;
+}
+#url, #pass, #submit {
+	font-size: 20px;
+	height: 25px;
+	padding: 0px;
+	margin: 5px 0px 0px 0px;
+	border: 1px solid #C0C0C0;
+	font-family: "Fixedsys Excelsior 2.00";
+	text-align: center;
+	width: auto;
+}
+#submit{
+	cursor: pointer;
+	width: 50px;
+}
+body {
+	overflow: hidden;
+}
+.link{
+	text-decoration: none;
+	cursor: pointer;
+	color: gray;
+}
+.error {
+	color: #CF2327;
+}
+.urlinput, .passinput {
+	vertical-align: 8px;
+}
+.field {
+	font-size: 15px;
+	padding: 0px;
+	margin: 5px 0px 0px 0px;
+	border: none;
+	font-family: "Fixedsys Excelsior 2.00";
+	right: 20%;
+	background-color: white !important;
+}
+.success {
+	margin-top: 5px;
+}
