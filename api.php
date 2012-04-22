@@ -1,5 +1,5 @@
 <?php	
-	$ROOT_PAGE = "nbaztec.no-ip.org/proj/url-shortener/";
+	$ROOT_PAGE = "u.krow.me/";
 	$DOMAIN_URL = "http://".$ROOT_PAGE;	
 	
 	function getRandomKey($length)
