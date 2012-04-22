@@ -2,7 +2,7 @@
 	$DOMAIN_URL = "http://u.krow.me/";	
 	$e = explode("//", $DOMAIN_URL, 2);
 	$ROOT_PAGE = $e[1];
-	
+
 	function getRandomKey($length)
     {
         $default_arr = array("0123456789",
@@ -14,13 +14,6 @@
             $random_string .= $set[mt_rand(0,strlen($set)-1)];
         return $random_string;
     }
-	
-	/*
-	 * Will not work HTTP_REFERER is set by browser so can't be trusted
-	 */
-	//if(isset($_SERVER['HTTP_REFERER']) && $_SERVER['HTTP_REFERER'] === $_SERVER['PHP_SELF'])
-	//	die("Redirection Loop Detected");
-	//$url = isset($_REQUEST['url']) 
 	
 	if($_SERVER['REQUEST_METHOD'] === "POST")		// If url is requested
 	{				
@@ -104,34 +97,36 @@
 			{
 				$row = $r->fetch_assoc();
 				$u = html_entity_decode($row['url']);
-				/*
-				 * Custom way to detect redirect loop, but client will handle it faster anyway
-				 *
-				$ch = curl_init(); 
-				curl_setopt($ch, CURLOPT_URL,            $u); 
-				curl_setopt($ch, CURLOPT_HEADER,         true); 
-				curl_setopt($ch, CURLOPT_NOBODY,         true); 
-				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); 
-				curl_setopt($ch, CURLOPT_TIMEOUT,        15); 		
-				curl_exec($ch); 
-				$e = curl_errno($ch);
-				curl_close($ch);
-				if($e)
+				$u = getTargetUrl($DOMAIN_URL, $u);			// Get final redirected URL/Redirection loop
+				//echo "URL: ".$u;
+				if($u)
 				{
-					echo "REDIRECT ERROR";					
-					die();
+					header( "HTTP/1.1 301 Moved Permanently" ); 
+					header("Location: ".$u);								
 				}
-				*/				
-				header( "HTTP/1.1 301 Moved Permanently" ); 
-				header("Location: ".$u);								
+				else
+					die("Nice try with the infinite redirection. Here's a <a href='http://upload.wikimedia.org/wikipedia/commons/4/42/Cookie.gif'>cookie</a>.");
 			}
 			else
-			{
-				echo "No such url exists. Perhaps you wish to create one at <a href='$DOMAIN_URL'>u.krow.me</a>"; 
-				die(0);
-			}
+				die("No such url exists. Perhaps you wish to create one at <a href='$DOMAIN_URL'>u.krow.me</a>");
 			//print_r($PARCEL);
-		}
-		
-	}			
+		}		
+	}	
+	
+	function getTargetUrl($domain, $url, $timeout_seconds=25)
+	{
+		$ch = curl_init(); 
+		curl_setopt($ch, CURLOPT_URL, $domain."drill-url.php"); 
+		curl_setopt($ch, CURLOPT_HEADER, false);
+		curl_setopt($ch, CURLOPT_POST, true);		 
+		curl_setopt($ch, CURLOPT_POSTFIELDS, "url=$url&seconds=$timeout_seconds");
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); 
+		$b = curl_exec($ch);
+		$e = curl_errno($ch);
+		curl_close($ch);
+		if($e || empty($b))
+			return NULL;
+		else
+			return $b;
+	}
 ?>
