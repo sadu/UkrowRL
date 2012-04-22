@@ -1,6 +1,7 @@
 <?php	
-	$ROOT_PAGE = "u.krow.me/";
-	$DOMAIN_URL = "http://".$ROOT_PAGE;	
+	$DOMAIN_URL = "http://u.krow.me/";	
+	$e = explode("//", $DOMAIN_URL, 2);
+	$ROOT_PAGE = $e[1];
 	
 	function getRandomKey($length)
     {
