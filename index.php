@@ -23,13 +23,14 @@
 		<input name=":O" type="submit" value="krow" class="submit" />
 		<input id="no-js" name="no-js" type="hidden" value="true" />
     </form>
+    <div id="status">
 <?php
 	if(isset($PARCEL))
 	{
 		if($PARCEL['error'] == "")
 		{
 	?>
-		<div class="success">Your short url is: <a href="<? echo $ROOT_PAGE; ?>index.php?key=<? echo urlencode($PARCEL['url']); ?>" class="link" ><? echo $ROOT_PAGE; ?>index.php?key=<?php echo $PARCEL['url'];  ?></a></div>
+			<div class="success">Your short url is: <a href="<? echo $ROOT_PAGE; ?>index.php?key=<? echo urlencode($PARCEL['url']); ?>" class="link" ><? echo $ROOT_PAGE; ?>index.php?key=<?php echo $PARCEL['url'];  ?></a></div>
 	<?php
         }
         else
@@ -40,6 +41,7 @@
         }	
 	}
 ?>
+	</div>
 	<div class="back"><a href="<? echo $ROOT_PAGE; ?>" class="link">Back</a></div>
 </div>
 </body>
