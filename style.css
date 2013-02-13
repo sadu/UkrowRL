@@ -1,39 +1,40 @@
-﻿#noJS {
-	text-align: center;
-}
-#yesJS {
-	display: none;
+﻿body {
+	overflow: hidden;
 }
 body {
 	font-family: "Fixedsys Excelsior 2.00";
+}
+#url-shortner{
+	text-align:center;
 }
 #krow {
 	font-size: xx-large;
+	text-align:center;
 }
-#url, #pass, #submit {
+.url, .pass, .submit {
 	font-size: 20px;
 	height: 25px;
-	padding: 0px;
 	margin: 5px 0px 0px 0px;
 	border: 1px solid #C0C0C0;
-	font-family: "Fixedsys Excelsior 2.00";
-	text-align: center;
+	font-family: "Courier New", "Fixedsys Excelsior 2.00";
+	text-align: left;
 	width: auto;
 }
-#submit{
+.submit{
 	cursor: pointer;
-	width: 50px;
 }
-body {
-	overflow: hidden;
+.submit:hover{
+	text-decoration:underline;
 }
 .link{
 	text-decoration: none;
 	cursor: pointer;
 	color: gray;
 }
-.error {
-	color: #CF2327;
+.form{
+	margin:0 auto;
+	width:auto;
+	display:inline-block;
 }
 .urlinput, .passinput {
 	vertical-align: 8px;
@@ -43,10 +44,33 @@ body {
 	padding: 0px;
 	margin: 5px 0px 0px 0px;
 	border: none;
-	font-family: "Fixedsys Excelsior 2.00";
+	font-family: "Courier New", "Fixedsys Excelsior 2.00";
 	right: 20%;
 	background-color: white !important;
 }
 .success {
-	margin-top: 5px;
+	margin: 20px 0;
+	color:#039;
+}
+.fail {
+	margin: 20px 0;
+	color: #CF2327;
+}
+.custom-span{
+	color:#006;
+	border: 1px solid #CCC;
+	padding: 1px;
+	border-right:0;
+}
+.custom{
+	color:#006;
+	margin-left:-1px;
+	padding:3px;
+	outline:none;
+	appearance:normal;
+	border: 1px solid #CCC;	
+	border-left:0;
+}
+.back{
+	margin-top:50px;
 }
